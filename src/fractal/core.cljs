@@ -36,14 +36,16 @@
     (and (vector? a)
          (number? b)) [(* (first a) b) (second a)]))
 
-(defn multiply-i [a b]
+(defn multiply-i
+  "multiply complex number a and b"
+  [a b]
   (if (and (vector? a)
            (vector? b))
     [(+ (* (first a) (first b))
         (* -1 (second a) (second b)))
      (+ (* (second a) (first b))
         (* (first a) (second b)))]
-     (multiply a b)))
+    (multiply a b)))
 
 (defn subtract-i [a b]
   (add-i a (multiply-i -1 b)))
@@ -63,8 +65,8 @@
 
 (defn generate-grid
   "The coordinate system of a canvas, origin (0,0) is top left with x,y growing positive down left,
-  but the normal cartesian coordinate system the origin (0,0) is bottom left with x,y growing positive left, up.
-  Normalize the width and height of the canvas to a unit of 1 which is where the mandebrot set lives which mean
+  but the normal cartesian coordinate system the origin (0,0) is middle of the screen with x,y growing positive left, up and
+  negative left, down.  Normalize the width and height of the canvas to a unit of 1 which is where the mandebrot set lives which mean
   each pixel has a width and hiehght of 1/width and 1/height"
   [width height]
   (let [delta-x (/ 1 width)
@@ -145,7 +147,7 @@
   
   (doseq [r g]
     (doseq [[row col [x y]] r]
-        (when (or (>= x 1)
+      (when (or (>= x 1)
                 (>= y 1))
         (prn r))))
   
