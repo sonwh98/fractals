@@ -60,7 +60,7 @@
     (Math/sqrt real)))
 
 (defn generate-grid
-  "The coordinate system of a canvas, origin (0,0) is top left with x,y growing positive down left, down
+  "The coordinate system of a canvas, origin (0,0) is top left with x,y growing positive down left,
   but the normal cartesian coordinate system the origin (0,0) is bottom left with x,y growing positive left, up.
   Normalize the width and height of the canvas to a unit of 1 which is where the mandebrot set lives which mean
   each pixel has a width and hiehght of 1/width and 1/height"
