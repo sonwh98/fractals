@@ -2,13 +2,8 @@
 
 (enable-console-print!)
 
-(defn on-js-reload []
-  ;; optionally touch your app-state to force rerendering depending on
-  ;; your application
-  ;; (swap! app-state update-in [:__figwheel_counter] inc)
-  )
-
-(defn add [a b]
+(defn add-i [a b]
+  "a nd b can be regular numbers or complext numbers"
   (cond
     (and (number? a)
          (number? b)) [(+ a b) 0]
@@ -48,8 +43,8 @@
         (* (first a) (second b)))]
      (multiply a b)))
 
-(defn subtract [a b]
-  (add a (multiply-i -1 b)))
+(defn subtract-i [a b]
+  (add-i a (multiply-i -1 b)))
 
 (defn square-i [a]
   (multiply-i a a))
@@ -57,12 +52,19 @@
 (defn square [a]
   (multiply a a))
 
-(defn distance [[a b] [c d]]
-  (let [[real imaginary] (add (square (subtract [c 0] [a 0]))
-                              (square (subtract [0 d] [0 b])))]
+(defn distance
+  "use the pythagorean theorem to find distance between two points"
+  [[a b] [c d]]
+  (let [[real imaginary] (add-i (square (subtract-i [c 0] [a 0]))
+                                (square (subtract-i [0 d] [0 b])))]
     (Math/sqrt real)))
 
-(defn generate-grid [width height]
+(defn generate-grid
+  "The coordinate system of a canvas, origin (0,0) is top left with x,y growing positive down left, down
+  but the normal cartesian coordinate system the origin (0,0) is bottom left with x,y growing positive left, up.
+  Normalize the width and height of the canvas to a unit of 1 which is where the mandebrot set lives which mean
+  each pixel has a width and hiehght of 1/width and 1/height"
+  [width height]
   (let [delta-x (/ 1 width)
         delta-y (/ 1 height)
         x (atom -1.5)
@@ -73,10 +75,28 @@
             :let [_ (swap! y (fn [y] (- y delta-y)))]]
         [i j [@x @y]]))))
 
+(defn escape? [[real imaginary :as c]]
+  (let [max-iteration 30]
+    (loop [zn c
+           n 0]
+      (prn zn)
+      (if (< n max-iteration)
+        (recur (add-i (square zn) c)
+               (inc n))
+        (if (< (distance zn [0 0]) 1) 
+          false
+          true)))))
+
 (defn plot-mandelbrot [ctx grid]
   (doseq [row grid]
-    (doseq [ [r c [x y]] row]
-      (.fillRect ctx r c 1 1))))
+    (doseq [ [row col [x y]] row
+            :let [escaped? (escape? [x y])]]
+      (prn [row col] [x y] " escaped?=" escaped?)
+      (if escaped?
+        (set! (.-fillStyle ctx) "rgb(155,0,0)")
+        (set! (.-fillStyle ctx) "rgb(18,161,56)"))
+      
+      (.fillRect ctx row col 1 1))))
 
 (defn pr-num [c]
   (cond
@@ -91,13 +111,14 @@
   (let [canvas (js/document.getElementById "canvas")
         ctx (.. canvas (getContext "2d"))
         
-        width js/window.innerWidth
-        height js/window.innerHeight
+        width 200 ;;js/window.innerWidth
+        height 200 ;;js/window.innerHeight
         grid (generate-grid width height)]
+    (prn "width=" width)
     (set! (.-width canvas) width)
     (set! (.-height canvas) height)
 
-    (set! (.-fillStyle ctx) "rgb(255,0,0)")
+    ;;(set! (.-fillStyle ctx) "rgb(155,0,0)")
     (plot-mandelbrot ctx grid)
     ;;(.beginPath ctx)
 
@@ -108,11 +129,24 @@
     ))
 
 
-(init)
+;;(init)
+
+
+
 (comment
   
-  (def g (generate-grid 3 3))
+  (def g (generate-grid 100 100))
 
+  (def foo (filter (fn [[r c [x y]]]
+                     (or (> x 1) (> y 1)))
+                   g))
+  
+  (doseq [r g]
+    (doseq [[row col [x y]] r]
+        (when (or (>= x 1)
+                (>= y 1))
+        (prn r))))
+  
   (def r0 (first g))
   (def rn (last g))
 
