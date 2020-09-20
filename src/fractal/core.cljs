@@ -2,8 +2,10 @@
 
 (enable-console-print!)
 
+;;a complex number is represented as a vector [a b] where a is the real part and b is the imaginary part
+
 (defn add-i [a b]
-  "a nd b can be regular numbers or complext numbers"
+  "a and b can be regular numbers or complext numbers. returns a vector representing a complex number"
   (cond
     (and (number? a)
          (number? b)) [(+ a b) 0]
