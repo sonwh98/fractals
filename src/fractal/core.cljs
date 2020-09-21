@@ -4,7 +4,7 @@
 
 ;;a complex number is represented as a vector [a b] where a is the real part and b is the imaginary part
 
-(defn add-i [a b]
+(defn add [a b]
   "a and b can be regular numbers or complext numbers. returns a vector representing a complex number"
   (cond
     (and (number? a)
@@ -45,10 +45,10 @@
         (* -1 (second a) (second b)))
      (+ (* (second a) (first b))
         (* (first a) (second b)))]
-    (multiply a b)))
+    (multiply a b))) 
 
-(defn subtract-i [a b]
-  (add-i a (multiply-i -1 b)))
+(defn subtract [a b]
+  (add a (multiply -1 b)))
 
 (defn square-i [a]
   (multiply-i a a))
@@ -56,55 +56,38 @@
 (defn square [a]
   (multiply a a))
 
-(defn distance
-  "use the pythagorean theorem to find distance between two points"
+(defn distance2
+  "use the pythagorean theorem to find distance between two points.
+  actually square of the distance because taking square root isnt necessary"
   [[a b] [c d]]
-  (let [[real imaginary] (add-i (square-i (subtract-i [c 0] [a 0]))
-                                (square-i (subtract-i [0 d] [0 b])))]
-    (Math/sqrt real)))
-
-(defn generate-grid
-  "The coordinate system of a canvas, origin (0,0) is top left with x,y growing positive down left,
-  but the normal cartesian coordinate system the origin (0,0) is middle of the screen with x,y growing positive left, up and
-  negative left, down.  Normalize the width and height of the canvas to a unit of 1 which is where the mandebrot set lives which mean
-  each pixel has a width and hiehght of 1/width and 1/height"
-  [width height]
-  (let [delta-x (/ 2 width)
-        delta-y (/ 2 height)
-        x (atom -2)]
-    (for [i (range width)
-          :let [_ (swap! x (fn [x] (+ x delta-x)))
-                y (atom 2)]]
-      (for [j (range height)
-            :let [_ (swap! y (fn [y] (- y delta-y)))]]
-        [i j [@x @y]]))))
+  (let [[real imaginary] (add (square (subtract [c 0] [a 0]))
+                              (square (subtract [0 d] [0 b])))]
+    real))
 
 (defn escape? [[real imaginary :as c]]
-  (let [max-iteration 30]
+  (let [max-iteration 25]
     (loop [zn c
            n 0]
-      ;;(prn zn)
-      (if (< n max-iteration)
-        (recur (add-i (square zn) c)
-               (inc n))
-        (if (< (distance zn [0 0]) 1) 
-          false
-          true)))))
+      (let [d (distance2 zn [0 0])]
+        (cond
+          (> n max-iteration) false
+          (< d 4)  (recur (add (square-i zn) c)
+                          (inc n))
+          (>= d 4) true)))))
 
-(defn plot-mandelbrot [ctx grid]
-  (prn "beging plot")
-  (doseq [row grid]
-    ;;(prn "row=" (first row))
-    (doseq [ [row col [x y]] row
-            :let [escaped? (escape? [x y])]]
-      ;;(prn [row col] [x y] " escaped?=" escaped?)
-      (if escaped?
-        (set! (.-fillStyle ctx) "rgb(155,0,0)")
-        (set! (.-fillStyle ctx) "rgb(18,161,56)"))
-      
-      (.fillRect ctx row col 1 1)))
-  (prn "end plot")
-  )
+(defn plot [ctx width height]
+  (let [delta-x (atom (/ 2 width))
+        delta-y (atom (/ 1 height))
+        x-start -2
+        y-start 1]
+    (doseq [i (range width)
+            :let [x (+ x-start (* i @delta-x))]]
+      (doseq [j (range height)
+              :let [y (- y-start (* j @delta-y))]]
+        (if (escape? [x y])
+          (set! (.-fillStyle ctx) "rgb(155,0,0)")
+          (set! (.-fillStyle ctx) "rgb(18,161,56)"))
+        (.fillRect ctx i j 1 1)))))
 
 (defn pr-num [c]
   (cond
@@ -119,26 +102,11 @@
   (prn "init")
   (let [canvas (js/document.getElementById "canvas")
         ctx (.. canvas (getContext "2d"))
-        
         width js/window.innerWidth
-        _ (prn "width=" width)
-        height js/window.innerHeight
-        _ (prn "height=" height)
-
-        grid (generate-grid width height)
-        _ (prn "foo2")]
+        height js/window.innerHeight]
     (set! (.-width canvas) width)
     (set! (.-height canvas) height)
-
-    ;;(set! (.-fillStyle ctx) "rgb(155,0,0)")
-    (plot-mandelbrot ctx grid)
-    ;;(.beginPath ctx)
-
-
-    ;;(.fill ctx)
-
-
-    ))
+    (plot ctx width height)))
 
 
 (init)
@@ -146,22 +114,8 @@
 
 
 (comment
+  (escape? [0 0])
   
-  (def g (generate-grid 100 100))
-
-  (def foo (filter (fn [[r c [x y]]]
-                     (or (> x 1) (> y 1)))
-                   g))
-  
-  (doseq [r g]
-    (doseq [[row col [x y]] r]
-      (when (or (>= x 1)
-                (>= y 1))
-        (prn r))))
-  
-  (def r0 (first g))
-  (def rn (last g))
-
   (add 1 1)
   (pr-num (add [1] [1 1]))
 
