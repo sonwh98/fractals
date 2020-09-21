@@ -59,8 +59,8 @@
 (defn distance
   "use the pythagorean theorem to find distance between two points"
   [[a b] [c d]]
-  (let [[real imaginary] (add-i (square (subtract-i [c 0] [a 0]))
-                                (square (subtract-i [0 d] [0 b])))]
+  (let [[real imaginary] (add-i (square-i (subtract-i [c 0] [a 0]))
+                                (square-i (subtract-i [0 d] [0 b])))]
     (Math/sqrt real)))
 
 (defn generate-grid
@@ -69,12 +69,12 @@
   negative left, down.  Normalize the width and height of the canvas to a unit of 1 which is where the mandebrot set lives which mean
   each pixel has a width and hiehght of 1/width and 1/height"
   [width height]
-  (let [delta-x (/ 1 width)
-        delta-y (/ 1 height)
-        x (atom -1.5)
-        y (atom 1)]
+  (let [delta-x (/ 2 width)
+        delta-y (/ 2 height)
+        x (atom -2)]
     (for [i (range width)
-          :let [_ (swap! x (fn [x] (+ x delta-x)))]]
+          :let [_ (swap! x (fn [x] (+ x delta-x)))
+                y (atom 2)]]
       (for [j (range height)
             :let [_ (swap! y (fn [y] (- y delta-y)))]]
         [i j [@x @y]]))))
@@ -83,7 +83,7 @@
   (let [max-iteration 30]
     (loop [zn c
            n 0]
-      (prn zn)
+      ;;(prn zn)
       (if (< n max-iteration)
         (recur (add-i (square zn) c)
                (inc n))
@@ -92,15 +92,19 @@
           true)))))
 
 (defn plot-mandelbrot [ctx grid]
+  (prn "beging plot")
   (doseq [row grid]
+    ;;(prn "row=" (first row))
     (doseq [ [row col [x y]] row
             :let [escaped? (escape? [x y])]]
-      (prn [row col] [x y] " escaped?=" escaped?)
+      ;;(prn [row col] [x y] " escaped?=" escaped?)
       (if escaped?
         (set! (.-fillStyle ctx) "rgb(155,0,0)")
         (set! (.-fillStyle ctx) "rgb(18,161,56)"))
       
-      (.fillRect ctx row col 1 1))))
+      (.fillRect ctx row col 1 1)))
+  (prn "end plot")
+  )
 
 (defn pr-num [c]
   (cond
@@ -112,13 +116,17 @@
                     (-> imaginary nil? not) (prn (str imaginary "i"))))))
 
 (defn init []
+  (prn "init")
   (let [canvas (js/document.getElementById "canvas")
         ctx (.. canvas (getContext "2d"))
         
-        width 200 ;;js/window.innerWidth
-        height 200 ;;js/window.innerHeight
-        grid (generate-grid width height)]
-    (prn "width=" width)
+        width js/window.innerWidth
+        _ (prn "width=" width)
+        height js/window.innerHeight
+        _ (prn "height=" height)
+
+        grid (generate-grid width height)
+        _ (prn "foo2")]
     (set! (.-width canvas) width)
     (set! (.-height canvas) height)
 
@@ -133,7 +141,7 @@
     ))
 
 
-;;(init)
+(init)
 
 
 
