@@ -50,11 +50,11 @@
 (defn subtract [a b]
   (add a (multiply -1 b)))
 
-(defn square-i [a]
-  (multiply-i a a))
-
 (defn square [a]
   (multiply a a))
+
+(defn square-i [a]
+  (multiply-i a a))
 
 (defn distance2
   "use the pythagorean theorem to find distance between two points.
@@ -76,8 +76,8 @@
           (>= d 4) true)))))
 
 (defn plot [ctx width height]
-  (let [delta-x (atom (/ 2 width))
-        delta-y (atom (/ 1 height))
+  (let [delta-x (atom (/ 4 width))
+        delta-y (atom (/ 2 height))
         x-start -2
         y-start 1]
     (doseq [i (range width)
@@ -89,7 +89,9 @@
           (set! (.-fillStyle ctx) "rgb(18,161,56)"))
         (.fillRect ctx i j 1 1)))))
 
-(defn pr-num [c]
+(defn pr-num
+  "prints out complex number for debugging purposes"
+  [c]
   (cond
     (number? c) (prn (str c))
     (vector? c) (let [[real imaginary] c]
@@ -113,57 +115,3 @@
 
 
 
-(comment
-  (escape? [0 0])
-  
-  (add 1 1)
-  (pr-num (add [1] [1 1]))
-
-  (pr-num [1 20])
-  
-  (subtract (square [1 1])
-            (square [1 1]))
-
-  (subtract [5 0] [5 0])
-  (multiply [5 1] [5 1])
-  (square [5 1])
-
-  (let [c [3 2]
-        d [5 -1]]
-    (add c d)
-    )
-  
-  (distance [3 2] 
-            [5 -1])
-
-  (add (square (subtract -1 2))
-       (square (subtract 5 3)))
-
-  (square (subtract [5 0] [3 0]))
-  (square (subtract [0 -1] [0 2]))
-
-  (multiply-i [0 -3] [0 -3])
-  (multiply [0 -3] [0 -3])
-  
-  (square [0 -3])
-  (square-i [0 -3])
-
-  (multiply [0 -3] [0 -3])
-  
-  (subtract [5 1] [3 10])
-
-  (subtract [3 2] [1 5])
-  
-  (multiply 2 [3 4])
-  (multiply [-1 0] [1 1])
-  (multiply -1  [1 1])
-
-  (multiply-i [1 2] [3 4])
-  (multiply-i 2 [5 -4])
-  
-  (init)
-
-  (multiply 3 4)
-
-  
-  )
